@@ -5,50 +5,58 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OpenWay – Dẫn đường du lịch tiếp cận (Prototype mô phỏng)</title>
 <style>
-:root{--bg:#FAF8F2;--ink:#162E2B;--ink2:#244C46;--pri:#17463C;--onpri:#fff;--warn:#8A302A;--line:#17463C;--card:#fff;--sand:#E9DFC6;--fs:1}
+:root{--bg:#FAF8F2;--ink:#162E2B;--ink2:#244C46;--pri:#17463C;--onpri:#fff;--warn:#8A302A;--line:#17463C;--card:#fff;--sand:#EFE8D6;--fs:1;--serif:Georgia,"Times New Roman",serif}
 :root[data-theme=yb]{--bg:#000;--ink:#FFE600;--ink2:#FFE600;--pri:#FFE600;--onpri:#000;--warn:#FFE600;--line:#FFE600;--card:#000;--sand:#222}
 :root[data-theme=wb]{--bg:#000;--ink:#fff;--ink2:#fff;--pri:#fff;--onpri:#000;--warn:#fff;--line:#fff;--card:#000;--sand:#222}
 :root[data-theme=bw]{--bg:#fff;--ink:#000;--ink2:#000;--pri:#000;--onpri:#fff;--warn:#000;--line:#000;--card:#fff;--sand:#ddd}
 *{box-sizing:border-box}
 html{font-size:calc(18px*var(--fs))}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.55 system-ui,-apple-system,Roboto,"Segoe UI",sans-serif}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.6 system-ui,-apple-system,Roboto,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
 .skip{position:absolute;left:-999px}.skip:focus{left:8px;top:8px;background:var(--pri);color:var(--onpri);padding:12px;z-index:9}
-header{position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--line);display:flex;align-items:center;gap:8px;padding:8px 20px;min-height:56px;z-index:5}
-header b{font:700 1.1rem Georgia,"Times New Roman",serif;flex:1}
-main{max-width:720px;margin:0 auto;padding:20px}
-h1{font:700 1.55rem/1.3 Georgia,"Times New Roman",serif;margin:0 0 12px}h1:focus{outline:none}
-h2{font:600 1.2rem/1.3 system-ui,sans-serif;margin:24px 0 8px}
+header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:8px 24px;min-height:64px;z-index:5}
+header b{font:400 1.45rem var(--serif);letter-spacing:.14em;flex:1;text-align:center}
+main{max-width:760px;margin:0 auto;padding:32px 24px 64px}
+h1{font:400 2rem/1.2 var(--serif);letter-spacing:-.01em;margin:0 0 16px}h1:focus{outline:none}
+h2{font:600 1.1rem/1.3 system-ui,sans-serif;margin:32px 0 12px}
 p{margin:0 0 12px}
+.hero{padding:24px 0 8px}.hero h1{font-size:2.6rem;line-height:1.1;margin-bottom:12px}.hero p{font-size:1.1rem;max-width:34ch}
 button,.btn,select,input,textarea{font:inherit;color:inherit}
-button,.btn{min-height:56px;min-width:56px;padding:12px 20px;border:2px solid var(--line);background:var(--card);border-radius:10px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;color:var(--ink)}
-button.pri{background:var(--pri);color:var(--onpri);min-height:64px}
+button,.btn{min-height:56px;min-width:56px;padding:12px 24px;border:1.5px solid var(--line);background:transparent;border-radius:999px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;color:var(--ink);transition:background .15s,color .15s}
+button:hover{background:var(--sand)}
+button.pri{background:var(--pri);color:var(--onpri);min-height:64px}button.pri:hover{opacity:.92;background:var(--pri)}
 button.warn{border-color:var(--warn);color:var(--warn)}
-button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:4px solid var(--ink);outline-offset:3px;box-shadow:0 0 0 7px var(--bg)}
-.row{display:flex;flex-wrap:wrap;gap:8px}.col{display:grid;gap:8px}
-.card{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:16px;margin:0 0 12px}
-.mode{display:block;width:100%;text-align:left;padding:20px;min-height:96px}
-.mode small{display:block;font-weight:400}
-.tag{display:inline-block;border:2px solid var(--line);border-radius:6px;padding:2px 8px;font-size:.9rem;font-weight:600}
-.tag.ok::before{content:"✔ "}.tag.bar{border-color:var(--warn);color:var(--warn)}.tag.bar::before{content:"⚠ "}.tag.no{border-style:dashed}.tag.no::before{content:"? "}
-.sec{font-size:.9rem;color:var(--ink2)}
-.banner{background:var(--sand);border:2px dashed var(--line);padding:8px 12px;border-radius:8px;font-size:.9rem;margin-bottom:16px}
-.now{font:700 1.5rem/1.35 system-ui,sans-serif}
-.alert{border:3px solid var(--warn);padding:16px;border-radius:12px;margin:0 0 12px}
-label{display:block;margin:8px 0;font-weight:600}
-.opt{display:flex;gap:12px;align-items:center;min-height:56px;border:2px solid var(--line);border-radius:10px;padding:8px 16px;margin:0 0 8px;font-weight:400}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:4px solid var(--ink);outline-offset:3px;box-shadow:0 0 0 7px var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:12px}.col{display:grid;gap:12px}
+.card{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:24px;margin:0 0 16px}
+.mode{display:block;width:100%;text-align:left;padding:28px;min-height:132px;border-radius:24px;border-width:1.5px;font-size:1.3rem}
+.mode b{font:400 1.7rem var(--serif);display:block;margin-bottom:6px}
+.mode small{display:block;font-weight:400;font-size:1rem;line-height:1.5}
+.mode.dark{background:var(--pri);color:var(--onpri)}.mode.dark:hover{background:var(--pri);opacity:.93}
+.tag{display:inline-block;border:1.5px solid var(--line);border-radius:999px;padding:2px 12px;font-size:.88rem;font-weight:600}
+.tag.ok{background:var(--pri);color:var(--onpri)}.tag.ok::before{content:"✔ "}.tag.bar{border-color:var(--warn);color:var(--warn)}.tag.bar::before{content:"⚠ "}.tag.no{border-style:dashed}.tag.no::before{content:"? "}
+.sec{font-size:.92rem;color:var(--ink2)}
+.banner{background:var(--sand);padding:10px 16px;border-radius:12px;font-size:.88rem;margin-bottom:24px}
+.now{font:400 1.9rem/1.3 var(--serif);margin-bottom:12px}
+.alert{border:2px solid var(--warn);padding:20px;border-radius:20px;margin:0 0 16px}
+label{display:block;margin:12px 0 6px;font-weight:600}
+.opt{display:flex;gap:16px;align-items:center;min-height:56px;border:1px solid var(--line);border-radius:16px;padding:8px 20px;margin:0 0 8px;font-weight:400;background:var(--card)}
 input[type=radio],input[type=checkbox]{width:28px;height:28px;accent-color:var(--pri)}
-input[type=range],select,textarea{width:100%;min-height:56px;background:var(--card);border:2px solid var(--line);border-radius:10px;padding:8px}
+input[type=range]{width:100%;min-height:44px;accent-color:var(--pri)}
+select,textarea{width:100%;min-height:56px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:12px 16px}
 svg text{fill:var(--ink);font:600 13px system-ui}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-dialog{border:3px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);max-width:90vw}
-@media(prefers-reduced-motion:no-preference){main{animation:in .25s ease-out}@keyframes in{from{opacity:.4}}}
+dialog{border:1.5px solid var(--line);border-radius:24px;padding:28px;background:var(--bg);color:var(--ink);max-width:90vw}
+dialog::backdrop{background:rgba(22,46,43,.55)}
+@media(min-width:760px){.home{display:grid;grid-template-columns:1fr 1fr;gap:16px}}
+@media(prefers-reduced-motion:no-preference){main{animation:in .3s ease-out}@keyframes in{from{opacity:.3}}}
 </style>
 </head>
 <body>
 <a class="skip" href="#main">Bỏ qua đến nội dung chính</a>
 <header>
   <button id="homeBtn" aria-label="Về trang chủ">⌂ Trang chủ</button>
-  <b>OpenWay</b>
+  <b>OPENWAY</b>
   <button id="setBtn" aria-label="Cài đặt">⚙ Cài đặt</button>
 </header>
 <main id="main" tabindex="-1"></main>
@@ -111,9 +119,9 @@ const banner=`<p class="banner" role="note">Prototype mô phỏng: dữ liệu v
 /* ---------- Render ---------- */
 function render(){
   const m=$("#main");
-  if(view==="home")m.innerHTML=`${banner}<h1>Chọn cách bạn muốn dùng OpenWay</h1>
-   <div class="col">
-    <button class="mode" data-m="nonvisual"><b>Nghe chỉ dẫn</b><small>Chế độ không cần nhìn: lời nói, trình đọc màn hình, phản hồi rung.</small></button>
+  if(view==="home")m.innerHTML=`${banner}<div class="hero"><h1>Designed for every journey.</h1><p>Dẫn đường du lịch cho người khiếm thị và người dùng xe lăn. Chọn cách bạn muốn dùng OpenWay.</p></div>
+   <div class="home">
+    <button class="mode dark" data-m="nonvisual"><b>Nghe chỉ dẫn</b><small>Chế độ không cần nhìn: lời nói, trình đọc màn hình, phản hồi rung.</small></button>
     <button class="mode" data-m="visual"><b>Xem tuyến đường</b><small>Chế độ bản đồ tiếp cận: bề mặt, độ dốc, rào cản, nút lớn.</small></button>
    </div>
    <h2>Lối tắt</h2><div class="row"><button data-go="explore">Khám phá địa điểm</button><button data-go="journey">Hành trình</button><button data-go="report">Báo cáo vấn đề</button></div>
