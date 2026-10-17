@@ -14,8 +14,8 @@ html{font-size:calc(18px*var(--fs))}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.6 system-ui,-apple-system,Roboto,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
 .skip{position:absolute;left:-999px}.skip:focus{left:8px;top:8px;background:var(--pri);color:var(--onpri);padding:12px;z-index:9}
 header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:8px 24px;min-height:64px;z-index:5}
-header b{font:400 1.45rem var(--serif);letter-spacing:.14em;flex:1;text-align:center}
-main{max-width:760px;margin:0 auto;padding:32px 24px 64px}
+header b{font:400 1.45rem var(--serif);letter-spacing:.03em;flex:1;text-align:center}
+main{max-width:760px;margin:0 auto;padding:32px 24px 120px}
 h1{font:400 2rem/1.2 var(--serif);letter-spacing:-.01em;margin:0 0 16px}h1:focus{outline:none}
 h2{font:600 1.1rem/1.3 system-ui,sans-serif;margin:32px 0 12px}
 p{margin:0 0 12px}
@@ -48,18 +48,17 @@ svg text{fill:var(--ink);font:600 13px system-ui}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 dialog{border:1.5px solid var(--line);border-radius:24px;padding:28px;background:var(--bg);color:var(--ink);max-width:90vw}
 dialog::backdrop{background:rgba(22,46,43,.55)}
+#tabs{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;justify-content:center;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);z-index:6}
+#tabs button{flex:1;max-width:180px;padding:8px 4px;font-size:.9rem}
 @media(min-width:760px){.home{display:grid;grid-template-columns:1fr 1fr;gap:16px}}
 @media(prefers-reduced-motion:no-preference){main{animation:in .3s ease-out}@keyframes in{from{opacity:.3}}}
 </style>
 </head>
 <body>
 <a class="skip" href="#main">Bỏ qua đến nội dung chính</a>
-<header>
-  <button id="homeBtn" aria-label="Về trang chủ">⌂ Trang chủ</button>
-  <b>OPENWAY</b>
-  <button id="setBtn" aria-label="Cài đặt">⚙ Cài đặt</button>
-</header>
+<header><b>OpenWay</b></header>
 <main id="main" tabindex="-1"></main>
+<nav id="tabs" aria-label="Điều hướng chính"><button id="homeBtn">Trang chủ</button><button data-go="explore">Khám phá</button><button data-go="report">Báo cáo</button><button id="setBtn">Cài đặt</button></nav>
 <div id="live" class="sr" role="status" aria-live="polite"></div>
 <div id="alertLive" class="sr" role="alert"></div>
 <dialog id="dlg" aria-labelledby="dlgT"><h2 id="dlgT"></h2><p id="dlgP"></p><div class="row"><button id="dlgNo">Hủy</button><button id="dlgYes" class="pri">Xác nhận</button></div></dialog>
@@ -68,13 +67,13 @@ dialog::backdrop{background:rgba(22,46,43,.55)}
 "use strict";
 /* ---------- Dữ liệu mô phỏng (KHÔNG phải dữ liệu thực) ---------- */
 const PLACES=[
- {id:"p1",name:"Bảo tàng Lịch sử (mô phỏng)",area:"Quận 1",verified:"2026-09-12",src:"Khảo sát hiện trường",criteria:["Lối vào","Bề mặt","Thang máy"],
-  facts:[["Lối vào chính","Có đường dốc, đã ghi nhận","ok"],["Bề mặt","Lát phẳng, đã kiểm tra","ok"],["Độ dốc tuyến","Chưa đủ dữ liệu","no"]],
+ {id:"p1",name:"Bảo tàng Lịch sử (mô phỏng)",area:"Quận 1",verified:"2026-09-12",km:"1,2 km · 15 phút",src:"Khảo sát hiện trường",criteria:["Lối vào","Bề mặt","Thang máy"],
+  facts:[["Lối vào chính","Có đường dốc, đã ghi nhận","ok"],["Bề mặt","Lát phẳng, đã kiểm tra","ok"],["Độ dốc tuyến","Chưa đủ dữ liệu","no"],["Nhà vệ sinh tiếp cận","Chưa đủ dữ liệu","no"]],
   steps:[{t:"Đi thẳng khoảng 50 mét",d:"straight",s:"ok"},{t:"Sau 30 mét có điểm rẽ trái",d:"left",s:"ok"},{t:"Đoạn tiếp theo chưa có thông tin tiếp cận được xác minh",d:"straight",s:"no"},{t:"Rẽ phải vào lối đường dốc",d:"right",s:"ok"},{t:"Bạn đã đến khu vực lối vào",d:"arrive",s:"ok"}]},
- {id:"p2",name:"Nhà hát lớn (mô phỏng)",area:"Quận 1",verified:"",src:"Báo cáo cộng đồng",criteria:[],
+ {id:"p2",name:"Nhà hát lớn (mô phỏng)",area:"Quận 1",verified:"",km:"0,6 km · 8 phút",src:"Báo cáo cộng đồng",criteria:[],
   facts:[["Lối vào","Điều kiện tiếp cận chưa được xác nhận","no"],["Nguồn","Báo cáo cộng đồng, xác minh chưa hoàn thành","no"]],
   steps:[{t:"Đi thẳng khoảng 40 mét",d:"straight",s:"no"},{t:"Rẽ trái",d:"left",s:"no"},{t:"Bạn đã đến khu vực điểm đến",d:"arrive",s:"no"}]},
- {id:"p3",name:"Công viên ven sông (mô phỏng)",area:"Thủ Đức",verified:"2026-08-30",src:"Khảo sát hiện trường",criteria:["Bề mặt","Chướng ngại"],
+ {id:"p3",name:"Công viên ven sông (mô phỏng)",area:"Thủ Đức",verified:"2026-08-30",km:"2,4 km · 30 phút",src:"Khảo sát hiện trường",criteria:["Bề mặt","Chướng ngại"],
   facts:[["Lối đi chính","Có 3 bậc, chưa có đường dốc thay thế","bar"],["Bề mặt","Gạch lát, đã kiểm tra","ok"]],
   steps:[{t:"Đi thẳng khoảng 80 mét",d:"straight",s:"ok"},{t:"Phía trước có bậc thang đã ghi nhận. Chọn lối đi khác nếu cần",d:"straight",s:"bar"},{t:"Rẽ phải",d:"right",s:"ok"},{t:"Bạn đã đến khu vực điểm đến",d:"arrive",s:"ok"}]}
 ];
@@ -111,7 +110,7 @@ function confirmBox(t,p){return new Promise(res=>{const d=$("#dlg");$("#dlgT").t
 /* ---------- Điều hướng giữa màn hình ---------- */
 function go(v,a){view=v;arg=a||null;render();const m=$("#main");const h=m.querySelector("h1");if(h){h.tabIndex=-1;h.focus()}window.scrollTo(0,0)}
 $("#homeBtn").onclick=()=>{if(J&&!J.paused){J.paused=true;say("Đã tạm dừng dẫn đường. Hành trình được giữ lại.")}go("home")};
-$("#setBtn").onclick=()=>go("settings");
+$("#setBtn").onclick=()=>go("settings");document.querySelectorAll("#tabs [data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
 
 function tag(s){return `<span class="tag ${s}">${LBL[s]}</span>`}
 const banner=`<p class="banner" role="note">Prototype mô phỏng: dữ liệu và vị trí bên dưới là giả lập, không dùng để di chuyển thực tế.</p>`;
@@ -119,7 +118,7 @@ const banner=`<p class="banner" role="note">Prototype mô phỏng: dữ liệu v
 /* ---------- Render ---------- */
 function render(){
   const m=$("#main");
-  if(view==="home")m.innerHTML=`${banner}<div class="hero"><h1>Designed for every journey.</h1><p>Dẫn đường du lịch cho người khiếm thị và người dùng xe lăn. Chọn cách bạn muốn dùng OpenWay.</p></div>
+  if(view==="home")m.innerHTML=`${banner}<div class="hero"><h1>Du lịch tiếp cận cho mọi người</h1><p>Bản đồ số và dẫn đường cho người khiếm thị và người dùng xe lăn. Chọn cách bạn muốn dùng OpenWay.</p><p class="sec">Designed for every journey.</p></div>
    <div class="home">
     <button class="mode dark" data-m="nonvisual"><b>Nghe chỉ dẫn</b><small>Chế độ không cần nhìn: lời nói, trình đọc màn hình, phản hồi rung.</small></button>
     <button class="mode" data-m="visual"><b>Xem tuyến đường</b><small>Chế độ bản đồ tiếp cận: bề mặt, độ dốc, rào cản, nút lớn.</small></button>
@@ -129,19 +128,21 @@ function render(){
   if(view==="explore")m.innerHTML=`${banner}<h1>Khám phá</h1>
    <label for="q">Tìm địa điểm</label><input id="q" type="search" style="width:100%;min-height:56px;border:2px solid var(--line);border-radius:10px;padding:8px;background:var(--card)">
    <label for="f">Lọc theo điều kiện tiếp cận</label><select id="f"><option value="">Tất cả</option><option value="ok">Chỉ nơi có dữ liệu đã xác minh</option><option value="bar">Nơi có rào cản đã ghi nhận</option><option value="no">Nơi thiếu dữ liệu</option></select>
-   <div id="list" style="margin-top:16px"></div>`,fillList();
+   <label for="nd">Nhu cầu của tôi</label><select id="nd"><option value="">Chưa chọn</option><option value="blind">Người khiếm thị: ưu tiên dữ liệu bề mặt</option><option value="wheel">Người dùng xe lăn: ưu tiên lối vào, thang máy, chướng ngại</option></select>
+   <p class="sec" style="margin-top:8px">Bộ lọc chỉ dựa trên những tiêu chí đã được kiểm tra, không có nghĩa là tuyến phù hợp tuyệt đối.</p><div id="list" style="margin-top:16px"></div>`,fillList();
   if(view==="detail")detail();
   if(view==="journey")journey();
   if(view==="report")reportView();
   if(view==="settings")settings();
   m.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
   m.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;applySettings();say(S.mode==="nonvisual"?"Đã chọn chế độ nghe chỉ dẫn":"Đã chọn chế độ xem tuyến đường");go("explore")});
-  const q=$("#q"),f=$("#f");if(q){q.oninput=fillList;f.onchange=fillList}
+  const q=$("#q"),f=$("#f");if(q){q.oninput=fillList;f.onchange=fillList;$("#nd").onchange=fillList}
 }
 function overall(p){return p.steps.some(s=>s.s==="bar")?"bar":p.verified&&p.steps.every(s=>s.s==="ok"||true)&&p.facts.every(f=>f[2]!=="no")?"ok":p.verified?"ok":"no"}
 function fillList(){
   const q=($("#q")?.value||"").toLowerCase(),f=$("#f")?.value||"";
-  const L=PLACES.filter(p=>p.name.toLowerCase().includes(q)&&(!f||overall(p)===f));
+  const nd=$("#nd")?.value||"",has=(p,a)=>a.some(c=>p.criteria.includes(c));
+  const L=PLACES.filter(p=>p.name.toLowerCase().includes(q)&&(!f||overall(p)===f)&&(!nd||(nd==="blind"?has(p,["Bề mặt"]):has(p,["Lối vào","Thang máy","Chướng ngại"]))));
   $("#list").innerHTML=L.length?L.map(p=>`<article class="card"><h2 style="margin-top:0">${esc(p.name)}</h2><p class="sec">${esc(p.area)}</p>${tag(overall(p))}
    <p style="margin-top:12px" class="sec">${p.verified?`Xác minh ngày ${p.verified}. Tiêu chí: ${p.criteria.join(", ")}.`:"Chưa xác minh."}</p>
    <button data-id="${p.id}" aria-label="Xem điều kiện tiếp cận: ${esc(p.name)}">Xem điều kiện tiếp cận</button></article>`).join(""):`<p>Không có địa điểm phù hợp. Hãy bỏ bớt bộ lọc.</p>`;
@@ -152,10 +153,11 @@ function detail(){
   const unv=overall(p)==="no";
   $("#main").innerHTML=`${banner}<h1>${esc(p.name)}</h1>
   ${unv?`<div class="alert" role="alert"><b>Điều kiện tiếp cận chưa được xác nhận.</b> OpenWay không thể khẳng định lối vào này phù hợp với nhu cầu của bạn. Nguồn: ${esc(p.src)}.</div>`:""}
-  <h2>Điều kiện tiếp cận</h2>${p.facts.map(f=>`<div class="card"><b>${f[0]}</b><br>${esc(f[1])}<br>${tag(f[2])}</div>`).join("")}
+  <p class="sec">Khoảng cách (mô phỏng): ${p.km}</p><h2>Điều kiện tiếp cận</h2>${p.facts.map(f=>`<div class="card"><b>${f[0]}</b><br>${esc(f[1])}<br>${tag(f[2])}</div>`).join("")}
   <p class="sec">${p.verified?`Xác minh ngày ${p.verified} · ${esc(p.src)}. “Đã xác minh” không đồng nghĩa an toàn tuyệt đối; dữ liệu có giới hạn.`:"Chưa có ngày xác minh."}</p>
-  <div class="row"><button class="pri" id="start">Bắt đầu hành trình</button><button data-go="explore">Xem phương án khác</button><button data-go="report">Báo cáo vấn đề</button></div>`;
+  <div class="row"><button class="pri" id="start">Bắt đầu hành trình</button><button id="speak">Nghe mô tả</button><button data-go="explore">Xem phương án khác</button><button data-go="report">Báo cáo vấn đề</button></div>`;
   $("#start").onclick=async()=>{ if(unv&&!await confirmBox("Dữ liệu chưa xác minh","Điều kiện tiếp cận chưa được xác nhận. Bạn vẫn muốn xem hành trình mô phỏng?"))return; J={p,i:0,paused:false,gps:false};go("journey")};
+  $("#speak").onclick=()=>say(p.name+". "+p.facts.map(f=>f[0]+": "+f[1]).join(". ")+". "+(p.verified?"Xác minh ngày "+p.verified+".":"Chưa có ngày xác minh."));
 }
 function mapSvg(){
   const st=J.p.steps,w=640,seg=(w-80)/Math.max(st.length-1,1);
