@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenWay – Dẫn đường du lịch tiếp cận (Prototype mô phỏng)</title>
+<style>
+:root{--bg:#FAF8F2;--ink:#162E2B;--ink2:#244C46;--pri:#17463C;--onpri:#fff;--warn:#8A302A;--line:#17463C;--card:#fff;--sand:#E9DFC6;--fs:1}
+:root[data-theme=yb]{--bg:#000;--ink:#FFE600;--ink2:#FFE600;--pri:#FFE600;--onpri:#000;--warn:#FFE600;--line:#FFE600;--card:#000;--sand:#222}
+:root[data-theme=wb]{--bg:#000;--ink:#fff;--ink2:#fff;--pri:#fff;--onpri:#000;--warn:#fff;--line:#fff;--card:#000;--sand:#222}
+:root[data-theme=bw]{--bg:#fff;--ink:#000;--ink2:#000;--pri:#000;--onpri:#fff;--warn:#000;--line:#000;--card:#fff;--sand:#ddd}
+*{box-sizing:border-box}
+html{font-size:calc(18px*var(--fs))}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.55 system-ui,-apple-system,Roboto,"Segoe UI",sans-serif}
+.skip{position:absolute;left:-999px}.skip:focus{left:8px;top:8px;background:var(--pri);color:var(--onpri);padding:12px;z-index:9}
+header{position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--line);display:flex;align-items:center;gap:8px;padding:8px 20px;min-height:56px;z-index:5}
+header b{font:700 1.1rem Georgia,"Times New Roman",serif;flex:1}
+main{max-width:720px;margin:0 auto;padding:20px}
+h1{font:700 1.55rem/1.3 Georgia,"Times New Roman",serif;margin:0 0 12px}h1:focus{outline:none}
+h2{font:600 1.2rem/1.3 system-ui,sans-serif;margin:24px 0 8px}
+p{margin:0 0 12px}
+button,.btn,select,input,textarea{font:inherit;color:inherit}
+button,.btn{min-height:56px;min-width:56px;padding:12px 20px;border:2px solid var(--line);background:var(--card);border-radius:10px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;color:var(--ink)}
+button.pri{background:var(--pri);color:var(--onpri);min-height:64px}
+button.warn{border-color:var(--warn);color:var(--warn)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:4px solid var(--ink);outline-offset:3px;box-shadow:0 0 0 7px var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:8px}.col{display:grid;gap:8px}
+.card{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:16px;margin:0 0 12px}
+.mode{display:block;width:100%;text-align:left;padding:20px;min-height:96px}
+.mode small{display:block;font-weight:400}
+.tag{display:inline-block;border:2px solid var(--line);border-radius:6px;padding:2px 8px;font-size:.9rem;font-weight:600}
+.tag.ok::before{content:"✔ "}.tag.bar{border-color:var(--warn);color:var(--warn)}.tag.bar::before{content:"⚠ "}.tag.no{border-style:dashed}.tag.no::before{content:"? "}
+.sec{font-size:.9rem;color:var(--ink2)}
+.banner{background:var(--sand);border:2px dashed var(--line);padding:8px 12px;border-radius:8px;font-size:.9rem;margin-bottom:16px}
+.now{font:700 1.5rem/1.35 system-ui,sans-serif}
+.alert{border:3px solid var(--warn);padding:16px;border-radius:12px;margin:0 0 12px}
+label{display:block;margin:8px 0;font-weight:600}
+.opt{display:flex;gap:12px;align-items:center;min-height:56px;border:2px solid var(--line);border-radius:10px;padding:8px 16px;margin:0 0 8px;font-weight:400}
+input[type=radio],input[type=checkbox]{width:28px;height:28px;accent-color:var(--pri)}
+input[type=range],select,textarea{width:100%;min-height:56px;background:var(--card);border:2px solid var(--line);border-radius:10px;padding:8px}
+svg text{fill:var(--ink);font:600 13px system-ui}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+dialog{border:3px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);max-width:90vw}
+@media(prefers-reduced-motion:no-preference){main{animation:in .25s ease-out}@keyframes in{from{opacity:.4}}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Bỏ qua đến nội dung chính</a>
+<header>
+  <button id="homeBtn" aria-label="Về trang chủ">⌂ Trang chủ</button>
+  <b>OpenWay</b>
+  <button id="setBtn" aria-label="Cài đặt">⚙ Cài đặt</button>
+</header>
+<main id="main" tabindex="-1"></main>
+<div id="live" class="sr" role="status" aria-live="polite"></div>
+<div id="alertLive" class="sr" role="alert"></div>
+<dialog id="dlg" aria-labelledby="dlgT"><h2 id="dlgT"></h2><p id="dlgP"></p><div class="row"><button id="dlgNo">Hủy</button><button id="dlgYes" class="pri">Xác nhận</button></div></dialog>
+
+<script>
+"use strict";
+/* ---------- Dữ liệu mô phỏng (KHÔNG phải dữ liệu thực) ---------- */
+const PLACES=[
+ {id:"p1",name:"Bảo tàng Lịch sử (mô phỏng)",area:"Quận 1",verified:"2026-09-12",src:"Khảo sát hiện trường",criteria:["Lối vào","Bề mặt","Thang máy"],
+  facts:[["Lối vào chính","Có đường dốc, đã ghi nhận","ok"],["Bề mặt","Lát phẳng, đã kiểm tra","ok"],["Độ dốc tuyến","Chưa đủ dữ liệu","no"]],
+  steps:[{t:"Đi thẳng khoảng 50 mét",d:"straight",s:"ok"},{t:"Sau 30 mét có điểm rẽ trái",d:"left",s:"ok"},{t:"Đoạn tiếp theo chưa có thông tin tiếp cận được xác minh",d:"straight",s:"no"},{t:"Rẽ phải vào lối đường dốc",d:"right",s:"ok"},{t:"Bạn đã đến khu vực lối vào",d:"arrive",s:"ok"}]},
+ {id:"p2",name:"Nhà hát lớn (mô phỏng)",area:"Quận 1",verified:"",src:"Báo cáo cộng đồng",criteria:[],
+  facts:[["Lối vào","Điều kiện tiếp cận chưa được xác nhận","no"],["Nguồn","Báo cáo cộng đồng, xác minh chưa hoàn thành","no"]],
+  steps:[{t:"Đi thẳng khoảng 40 mét",d:"straight",s:"no"},{t:"Rẽ trái",d:"left",s:"no"},{t:"Bạn đã đến khu vực điểm đến",d:"arrive",s:"no"}]},
+ {id:"p3",name:"Công viên ven sông (mô phỏng)",area:"Thủ Đức",verified:"2026-08-30",src:"Khảo sát hiện trường",criteria:["Bề mặt","Chướng ngại"],
+  facts:[["Lối đi chính","Có 3 bậc, chưa có đường dốc thay thế","bar"],["Bề mặt","Gạch lát, đã kiểm tra","ok"]],
+  steps:[{t:"Đi thẳng khoảng 80 mét",d:"straight",s:"ok"},{t:"Phía trước có bậc thang đã ghi nhận. Chọn lối đi khác nếu cần",d:"straight",s:"bar"},{t:"Rẽ phải",d:"right",s:"ok"},{t:"Bạn đã đến khu vực điểm đến",d:"arrive",s:"ok"}]}
+];
+const HAPTIC={left:[120,100,120],right:[120,100,120,100,120],arrive:[80,100,160,100,80],warn:[400,150,400],straight:[]};
+const LBL={ok:"Đã xác minh",bar:"Có rào cản đã ghi nhận",no:"Chưa đủ dữ liệu"};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const load=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+
+/* ---------- Trạng thái ---------- */
+let S=Object.assign({mode:"visual",theme:"system",fs:1,rate:1,vib:true,voice:true},load("ow_settings",{}));
+let J=null; // hành trình
+let view="home",arg=null;
+
+function applySettings(){
+  const r=document.documentElement;
+  if(S.theme==="system"){r.removeAttribute("data-theme")}else r.setAttribute("data-theme",S.theme);
+  r.style.setProperty("--fs",S.fs);save("ow_settings",S);
+}
+/* ---------- Âm thanh / rung / thông báo ---------- */
+function say(text,urgent){
+  $("#live").textContent="";$(urgent?"#alertLive":"#live").textContent=text;
+  if(S.voice&&"speechSynthesis"in window){
+    if(urgent)speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);u.lang="vi-VN";u.rate=S.rate;speechSynthesis.speak(u);
+  }
+}
+function buzz(p){if(S.vib&&navigator.vibrate&&p&&p.length)navigator.vibrate(p)}
+function beep(f,ms){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(c.destination);o.start();setTimeout(()=>{o.stop();c.close()},ms)}catch(e){}}
+function confirmBox(t,p){return new Promise(res=>{const d=$("#dlg");$("#dlgT").textContent=t;$("#dlgP").textContent=p;
+  const done=v=>{d.close();res(v)};$("#dlgYes").onclick=()=>done(true);$("#dlgNo").onclick=()=>done(false);d.showModal();$("#dlgNo").focus()})}
+
+/* ---------- Điều hướng giữa màn hình ---------- */
+function go(v,a){view=v;arg=a||null;render();const m=$("#main");const h=m.querySelector("h1");if(h){h.tabIndex=-1;h.focus()}window.scrollTo(0,0)}
+$("#homeBtn").onclick=()=>{if(J&&!J.paused){J.paused=true;say("Đã tạm dừng dẫn đường. Hành trình được giữ lại.")}go("home")};
+$("#setBtn").onclick=()=>go("settings");
+
+function tag(s){return `<span class="tag ${s}">${LBL[s]}</span>`}
+const banner=`<p class="banner" role="note">Prototype mô phỏng: dữ liệu và vị trí bên dưới là giả lập, không dùng để di chuyển thực tế.</p>`;
+
+/* ---------- Render ---------- */
+function render(){
+  const m=$("#main");
+  if(view==="home")m.innerHTML=`${banner}<h1>Chọn cách bạn muốn dùng OpenWay</h1>
+   <div class="col">
+    <button class="mode" data-m="nonvisual"><b>Nghe chỉ dẫn</b><small>Chế độ không cần nhìn: lời nói, trình đọc màn hình, phản hồi rung.</small></button>
+    <button class="mode" data-m="visual"><b>Xem tuyến đường</b><small>Chế độ bản đồ tiếp cận: bề mặt, độ dốc, rào cản, nút lớn.</small></button>
+   </div>
+   <h2>Lối tắt</h2><div class="row"><button data-go="explore">Khám phá địa điểm</button><button data-go="journey">Hành trình</button><button data-go="report">Báo cáo vấn đề</button></div>
+   <p class="sec" style="margin-top:16px">Chế độ hiện tại: <b>${S.mode==="nonvisual"?"Nghe chỉ dẫn":"Xem tuyến đường"}</b>. Ứng dụng tôn trọng thiết lập tương phản và cỡ chữ bạn đã chọn.</p>`;
+  if(view==="explore")m.innerHTML=`${banner}<h1>Khám phá</h1>
+   <label for="q">Tìm địa điểm</label><input id="q" type="search" style="width:100%;min-height:56px;border:2px solid var(--line);border-radius:10px;padding:8px;background:var(--card)">
+   <label for="f">Lọc theo điều kiện tiếp cận</label><select id="f"><option value="">Tất cả</option><option value="ok">Chỉ nơi có dữ liệu đã xác minh</option><option value="bar">Nơi có rào cản đã ghi nhận</option><option value="no">Nơi thiếu dữ liệu</option></select>
+   <div id="list" style="margin-top:16px"></div>`,fillList();
+  if(view==="detail")detail();
+  if(view==="journey")journey();
+  if(view==="report")reportView();
+  if(view==="settings")settings();
+  m.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+  m.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;applySettings();say(S.mode==="nonvisual"?"Đã chọn chế độ nghe chỉ dẫn":"Đã chọn chế độ xem tuyến đường");go("explore")});
+  const q=$("#q"),f=$("#f");if(q){q.oninput=fillList;f.onchange=fillList}
+}
+function overall(p){return p.steps.some(s=>s.s==="bar")?"bar":p.verified&&p.steps.every(s=>s.s==="ok"||true)&&p.facts.every(f=>f[2]!=="no")?"ok":p.verified?"ok":"no"}
+function fillList(){
+  const q=($("#q")?.value||"").toLowerCase(),f=$("#f")?.value||"";
+  const L=PLACES.filter(p=>p.name.toLowerCase().includes(q)&&(!f||overall(p)===f));
+  $("#list").innerHTML=L.length?L.map(p=>`<article class="card"><h2 style="margin-top:0">${esc(p.name)}</h2><p class="sec">${esc(p.area)}</p>${tag(overall(p))}
+   <p style="margin-top:12px" class="sec">${p.verified?`Xác minh ngày ${p.verified}. Tiêu chí: ${p.criteria.join(", ")}.`:"Chưa xác minh."}</p>
+   <button data-id="${p.id}" aria-label="Xem điều kiện tiếp cận: ${esc(p.name)}">Xem điều kiện tiếp cận</button></article>`).join(""):`<p>Không có địa điểm phù hợp. Hãy bỏ bớt bộ lọc.</p>`;
+  $("#list").querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>go("detail",b.dataset.id));
+}
+function detail(){
+  const p=PLACES.find(x=>x.id===arg);
+  const unv=overall(p)==="no";
+  $("#main").innerHTML=`${banner}<h1>${esc(p.name)}</h1>
+  ${unv?`<div class="alert" role="alert"><b>Điều kiện tiếp cận chưa được xác nhận.</b> OpenWay không thể khẳng định lối vào này phù hợp với nhu cầu của bạn. Nguồn: ${esc(p.src)}.</div>`:""}
+  <h2>Điều kiện tiếp cận</h2>${p.facts.map(f=>`<div class="card"><b>${f[0]}</b><br>${esc(f[1])}<br>${tag(f[2])}</div>`).join("")}
+  <p class="sec">${p.verified?`Xác minh ngày ${p.verified} · ${esc(p.src)}. “Đã xác minh” không đồng nghĩa an toàn tuyệt đối; dữ liệu có giới hạn.`:"Chưa có ngày xác minh."}</p>
+  <div class="row"><button class="pri" id="start">Bắt đầu hành trình</button><button data-go="explore">Xem phương án khác</button><button data-go="report">Báo cáo vấn đề</button></div>`;
+  $("#start").onclick=async()=>{ if(unv&&!await confirmBox("Dữ liệu chưa xác minh","Điều kiện tiếp cận chưa được xác nhận. Bạn vẫn muốn xem hành trình mô phỏng?"))return; J={p,i:0,paused:false,gps:false};go("journey")};
+}
+function mapSvg(){
+  const st=J.p.steps,w=640,seg=(w-80)/Math.max(st.length-1,1);
+  let pts=st.map((s,i)=>[40+i*seg,i%2?120:60]);
+  let lines=pts.slice(1).map((pt,i)=>{const s=st[i+1].s,c=s==="bar"?"var(--warn)":s==="no"?"var(--ink2)":"var(--pri)";const dash=s==="no"?"10 8":s==="bar"?"2 6":"0";
+    return `<line x1="${pts[i][0]}" y1="${pts[i][1]}" x2="${pt[0]}" y2="${pt[1]}" stroke="${c}" stroke-width="6" stroke-dasharray="${dash}" stroke-linecap="${s==="bar"?"round":"butt"}"/><text x="${(pts[i][0]+pt[0])/2}" y="${(pts[i][1]+pt[1])/2-12}" text-anchor="middle">${s==="ok"?"Đã xác minh":s==="bar"?"⚠ Rào cản":"Chưa đủ dữ liệu"}</text>`}).join("");
+  const here=pts[J.i];
+  return `<svg viewBox="0 0 ${w} 180" width="100%" role="img" aria-label="Bản đồ sơ đồ tuyến: ${st.length-1} đoạn, đang ở bước ${J.i+1}. Xem danh sách tuyến bên dưới để biết chi tiết.">${lines}
+   ${J.gps?`<circle cx="${here[0]}" cy="${here[1]}" r="34" fill="none" stroke="var(--ink2)" stroke-dasharray="4 4" stroke-width="3"/>`:""}
+   <circle cx="${here[0]}" cy="${here[1]}" r="9" fill="var(--ink)"/></svg>`;
+}
+function journey(){
+  if(!J){$("#main").innerHTML=`${banner}<h1>Hành trình</h1><p>Chưa có hành trình. Hãy chọn một địa điểm để bắt đầu.</p><button class="pri" data-go="explore">Khám phá địa điểm</button>`;return}
+  const s=J.p.steps[J.i],nv=S.mode==="nonvisual";
+  const msg=J.gps?"Không thể xác nhận vị trí hiện tại. Đã tạm dừng chỉ dẫn rẽ.":s.t;
+  $("#main").innerHTML=`${banner}<h1>Dẫn đường</h1>
+  <p class="sec" id="gpsStat">${J.gps?"Vị trí chưa chính xác: sai số lớn hơn 10 m.":"Vị trí đang được theo dõi (mô phỏng)."}</p>
+  ${J.paused?`<div class="alert">Dẫn đường đang tạm dừng.</div>`:""}
+  ${J.gps?`<div class="alert" role="alert"><b>Vị trí chưa chính xác</b><br>Đã tạm dừng chỉ dẫn rẽ. Hãy xác nhận vị trí hoặc chờ tín hiệu ổn định.<div class="row" style="margin-top:8px"><button id="relocate">Thử xác định lại vị trí</button></div></div>`
+   :`<div class="card" role="group" aria-label="Chỉ dẫn hiện tại"><div class="now">${esc(msg)}</div>${tag(s.s)}<p class="sec" style="margin-top:8px">Bước ${J.i+1}/${J.p.steps.length}. Hãy kiểm tra môi trường thực tế trước khi tiếp tục.</p></div>`}
+  ${nv?"":`${mapSvg()}<h2>Danh sách tuyến</h2><ol style="padding-left:24px">${J.p.steps.map((x,i)=>`<li ${i===J.i?'aria-current="step"':''}>${esc(x.t)} — ${LBL[x.s]}</li>`).join("")}</ol>`}
+  <div class="col" style="margin-top:16px">
+   <button class="pri" id="repeat">Nhắc lại chỉ dẫn</button>
+   <button id="next" ${J.gps||J.paused?"disabled":""}>Bước tiếp theo (mô phỏng di chuyển)</button>
+   <div class="row"><button id="pause">${J.paused?"Tiếp tục dẫn đường":"Tạm dừng dẫn đường"}</button><button data-go="report">Báo cáo vấn đề</button><button id="gps">${J.gps?"Mô phỏng: GPS ổn định":"Mô phỏng: GPS sai số lớn"}</button></div>
+   <button class="warn" id="end">Kết thúc hành trình</button></div>`;
+  $("#repeat").onclick=()=>say(J.gps?"Không thể xác nhận vị trí hiện tại.":s.t);
+  $("#next").onclick=()=>{if(J.i<J.p.steps.length-1){J.i++;announce();journey();wire()}};
+  $("#pause").onclick=()=>{J.paused=!J.paused;say(J.paused?"Đã tạm dừng dẫn đường. Hành trình được giữ lại.":"Tiếp tục dẫn đường.");journey();wire($("#pause"))};
+  $("#gps").onclick=()=>{J.gps=!J.gps;if(J.gps){say("Vị trí chưa chính xác. Đã tạm dừng chỉ dẫn rẽ.",true);buzz(HAPTIC.warn);beep(220,400)}else say("Tín hiệu vị trí đã ổn định.");journey();wire($("#gps"))};
+  const rl=$("#relocate");if(rl)rl.onclick=()=>say("Đang thử xác định lại vị trí. Bạn có thể kiểm tra điểm mốc xung quanh.");
+  $("#end").onclick=async()=>{if(await confirmBox("Kết thúc hành trình?","Hành trình hiện tại sẽ bị xóa. Bạn có chắc không?")){J=null;say("Đã kết thúc hành trình.");go("home")}};
+  wire();
+}
+function wire(f){$("#main").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));if(f)f.focus()}
+function announce(){ // không cướp focus: chỉ phát thông báo
+  const s=J.p.steps[J.i];
+  if(s.s!=="ok"){say(s.t+(s.s==="no"?" Ứng dụng không thể xác nhận tuyến này phù hợp với nhu cầu của bạn.":""),true);buzz(HAPTIC.warn);beep(200,450);return}
+  say(s.t);buzz(HAPTIC[s.d]);beep(s.d==="arrive"?660:440,s.d==="arrive"?600:200);
+}
+/* ---------- Báo cáo ---------- */
+function reportView(){
+  const d=load("ow_draft",{type:"",note:""}),types=["Lối đi bị chặn","Đường dốc / bậc thang","Thang máy không hoạt động","Thông tin khác"];
+  $("#main").innerHTML=`${banner}<h1>Báo cáo thông tin</h1><p>Bạn muốn báo cáo điều gì? Chọn một vấn đề, hoặc mô tả bằng giọng nói. Không cần ảnh hay vị trí chính xác.</p>
+  <fieldset style="border:0;padding:0;margin:0"><legend><b>Loại vấn đề</b></legend>
+  ${types.map((t,i)=>`<label class="opt"><input type="radio" name="t" value="${t}" ${d.type===t?"checked":""}> ${t}</label>`).join("")}</fieldset>
+  <label for="note">Mô tả thêm (không bắt buộc)</label><textarea id="note" rows="4" placeholder="Ví dụ: lối vào phía Đông có ba bậc">${esc(d.note)}</textarea>
+  <div class="row" style="margin:8px 0"><button id="voice">Nhập bằng giọng nói</button></div>
+  <p class="card"><b>Chờ xác minh.</b> Báo cáo được tiếp nhận để kiểm tra, chưa tự động thay đổi dữ liệu công khai.</p>
+  <div class="row"><button class="pri" id="send">Gửi báo cáo</button><button id="draft">Lưu bản nháp</button><button data-go="${J?"journey":"home"}">Đóng</button></div>`;
+  const cur=()=>({type:(document.querySelector("[name=t]:checked")||{}).value||"",note:$("#note").value});
+  $("#draft").onclick=()=>{save("ow_draft",cur());say("Đã lưu bản nháp trên thiết bị.")};
+  $("#voice").onclick=()=>{const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){say("Thiết bị này chưa hỗ trợ nhập bằng giọng nói. Bạn có thể gõ hoặc dùng bàn phím đọc chính tả của hệ điều hành.");return}
+    const r=new R();r.lang="vi-VN";r.onresult=e=>{$("#note").value+=" "+e.results[0][0].transcript;say("Đã nhập nội dung")};r.onerror=()=>say("Không nhận được giọng nói. Hãy thử lại hoặc gõ nội dung.");r.start();say("Đang nghe")};
+  $("#send").onclick=async()=>{const c=cur();if(!c.type&&!c.note.trim()){say("Hãy chọn một loại vấn đề hoặc nhập mô tả.",true);return}
+    if(await confirmBox("Kiểm tra trước khi gửi",`Loại: ${c.type||"Chưa chọn"}. Mô tả: ${c.note||"Không có"}.`)){
+      const q=load("ow_reports",[]);q.push(Object.assign(c,{at:new Date().toISOString(),status:"Chờ xác minh"}));save("ow_reports",q);localStorage.removeItem("ow_draft");
+      say("Đã tiếp nhận báo cáo. Báo cáo đang chờ xác minh.");go(J?"journey":"home")}};
+}
+/* ---------- Cài đặt ---------- */
+function settings(){
+  $("#main").innerHTML=`<h1>Cài đặt</h1>
+  <h2>Chế độ sử dụng</h2><select id="sm" aria-label="Chế độ sử dụng"><option value="nonvisual">Nghe chỉ dẫn</option><option value="visual">Xem tuyến đường</option></select>
+  <h2>Giao diện</h2><label for="st">Tương phản</label><select id="st"><option value="system">Theo thiết lập hệ thống (mặc định OpenWay)</option><option value="yb">Vàng trên đen</option><option value="wb">Trắng trên đen</option><option value="bw">Đen trên trắng</option></select>
+  <label for="sf">Cỡ chữ: <output id="fo"></output></label><input type="range" id="sf" min="1" max="2" step="0.1">
+  <h2>Âm thanh và rung</h2><label for="sr">Tốc độ đọc: <output id="ro"></output></label><input type="range" id="sr" min="0.75" max="1.5" step="0.25">
+  <label class="opt"><input type="checkbox" id="sv"> Đọc chỉ dẫn bằng giọng nói</label><label class="opt"><input type="checkbox" id="sb"> Phản hồi rung</label>
+  <div class="row"><button id="test">Thử giọng đọc</button><button id="tl">Thử rung trái</button><button id="tr">Thử rung phải</button></div>
+  <p class="sec" style="margin-top:16px">Rung chỉ là kênh bổ trợ và có thể khác nhau theo thiết bị. Mọi cảnh báo quan trọng đều kèm lời nói.</p>`;
+  const set=(id,k,num)=>{const e=$(id);if(e.type==="checkbox")e.checked=S[k];else e.value=S[k];e.oninput=()=>{S[k]=e.type==="checkbox"?e.checked:num?+e.value:e.value;applySettings();upd()}};
+  set("#sm","mode");set("#st","theme");set("#sf","fs",1);set("#sr","rate",1);set("#sv","voice");set("#sb","vib");
+  const upd=()=>{$("#fo").textContent=Math.round(S.fs*100)+"%";$("#ro").textContent=S.rate+"×"};upd();
+  $("#test").onclick=()=>say("Theo tuyến đã chọn, khoảng 30 mét nữa có điểm rẽ trái.");
+  $("#tl").onclick=()=>{buzz(HAPTIC.left);say("Rẽ trái")};$("#tr").onclick=()=>{buzz(HAPTIC.right);say("Rẽ phải")};
+}
+applySettings();render();
+</script>
+</body>
+</html>
